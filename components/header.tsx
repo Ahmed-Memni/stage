@@ -27,6 +27,7 @@ interface ParsedLog {
   routing?: string
   duration?: string
   priority?: string
+  sequence?: number // Added for alive msg seq
 }
 
 export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitoring }: HeaderProps) {
@@ -141,7 +142,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+pmCpuIf_EventNotifyWakeupLineStat:\\s+([0-9A-Fa-f\\s]+)$`,
       'g'
     )
-    // Signal log pattern "ili 3andha barcha "
     const signalPattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+(?:\\[PM\\]|\\[(\\d+\\s+to\\s+\\d+)\\])\\s+([A-Za-z0-9_()\\s]+?)(?:\\s+(\\d+\\s+ms))?$`,
       'g'
@@ -153,9 +153,15 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
     const responsePattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+Response of PM EventCmd:\\s+([0-9A-Fa-f\\s]+)$`,
       'g'
-    )// someip pattern
+    )
+    // Some/IP pattern
     const someIpPattern = new RegExp(
       `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+oem_pm\\.\\d+\\s+oem_pm\\s+\\d+\\s+oem_pm\\[CSomeIpProcessor.cpp:\\s*(\\d+)\\]:\\s*(CSomeIpProcessor\\s+(sendSafeModeEvents|ePowerMode|eSleepOrder)\\s*:\\s*.+)`,
+      'g'
+    )
+    // Alive message sequence pattern
+    const aliveMsgPattern = new RegExp(
+      `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+CO\\s+(HI|MD|LO)\\s+alive msg seq:\\s+(\\d+)$`,
       'g'
     )
 
@@ -178,7 +184,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
     lines.forEach((line, index) => {
       if (!line.trim()) return // Skip empty lines
 
-      // Clean line (remove null bytes and invisible characters) aka 00 hamra milowel 
+      // Clean line (remove null bytes and invisible characters)
       const cleanedLine = line.replace(/[^\x20-\x7E\t\n]/g, '')
       console.log(`parseLogs: Processing line ${index + 1}: ${cleanedLine.slice(0, 50)}...`)
 
@@ -407,16 +413,17 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
       signalPattern.lastIndex = 0
       hvpmPattern.lastIndex = 0
       responsePattern.lastIndex = 0
+      aliveMsgPattern.lastIndex = 0
       const uartMatch = uartPattern.exec(cleanedLine)
       const sigMatch = signalPattern.exec(cleanedLine)
       const hvpmMatch = hvpmPattern.exec(cleanedLine)
       const responseMatch = responsePattern.exec(cleanedLine)
+      const aliveMsgMatch = aliveMsgPattern.exec(cleanedLine)
 
-      if (uartMatch) {
-        const [, timestampStr, priority, bytesStr] = uartMatch
-        console.log(`parseLogs: UART match at line ${index + 1}: ${bytesStr}`)
+      if (aliveMsgMatch) {
+        const [, timestampStr, priority, sequence] = aliveMsgMatch
+        console.log(`parseLogs: Alive msg seq match at line ${index + 1}: seq ${sequence}`)
         try {
-          // Parse MCU timestamp (format: DD-HH:MM:SS.sss)
           const tsClean = timestampStr.split('-')[1] || timestampStr
           const timestamp = new Date(`2025-01-01T${tsClean}Z`)
           if (isNaN(timestamp.getTime())) {
@@ -424,7 +431,34 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             return
           }
 
-          lastValidTimestamp = timestamp // Update last valid timestamp
+          lastValidTimestamp = timestamp
+          logs.push({
+            timestamp,
+            component: "MCU",
+            line_number: index + 1,
+            event: "ALIVE_MSG",
+            message: `alive msg seq: ${sequence}`,
+            routing: "2 to 1",
+            priority,
+            sequence: parseInt(sequence, 10)
+          })
+          console.log(`parseLogs: Added Alive msg log - Event: ALIVE_MSG, Sequence: ${sequence}`)
+        } catch (error) {
+          console.error(`parseLogs: Error parsing Alive msg line ${index + 1}: ${cleanedLine}`, error)
+          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
+        }
+      } else if (uartMatch) {
+        const [, timestampStr, priority, bytesStr] = uartMatch
+        console.log(`parseLogs: UART match at line ${index + 1}: ${bytesStr}`)
+        try {
+          const tsClean = timestampStr.split('-')[1] || timestampStr
+          const timestamp = new Date(`2025-01-01T${tsClean}Z`)
+          if (isNaN(timestamp.getTime())) {
+            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`)
+            return
+          }
+
+          lastValidTimestamp = timestamp
           const lastByte = bytesStr.trim().split(' ').pop()
           const val = lastByte === '01' ? 1 : 0
           const currentSignals: Record<string, number> = { SLEEP_E: val, WK_L: val, comm: val }
@@ -470,7 +504,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             return
           }
 
-          lastValidTimestamp = timestamp // Update last valid timestamp
+          lastValidTimestamp = timestamp
           const currentSignals: Record<string, number> = {}
           const signalValuePattern = new RegExp(`(\\w+)\\(([01])\\)`, 'g')
           let signalMatch
@@ -519,7 +553,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             return
           }
 
-          lastValidTimestamp = timestamp // Update last valid timestamp
+          lastValidTimestamp = timestamp
           logs.push({
             timestamp,
             component: "MCU",
@@ -546,7 +580,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             return
           }
 
-          lastValidTimestamp = timestamp // Update last valid timestamp
+          lastValidTimestamp = timestamp
           logs.push({
             timestamp,
             component: "MCU",
@@ -599,6 +633,10 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
           source_vm = "VM2"
           destination_vm = "VM1"
           type = "DIAG_RESP"
+        } else if (log.event === "ALIVE_MSG") {
+          source_vm = "VM2"
+          destination_vm = "VM1"
+          type = "HEARTBEAT"
         } else {
           source_vm = "VM1"
           destination_vm = log.signals && (Object.keys(log.signals).includes("SIP_PS_HOLD") || Object.keys(log.signals).includes("FB_N"))
@@ -652,7 +690,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         source_vm = "VM1"
         destination_vm = "VM4"
         type = "STATUS_UPDATE"
-
       }
 
       if (type === "STATUS_UPDATE" && component !== "MCU" && component !== "BootManager" && log.event !== "POWER_STATUS_LA" && log.event !== "POWER_STATUS_LA1" && component !== "CSomeIpProcessor") {
@@ -680,7 +717,8 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             routing: log.routing,
             duration: log.duration,
             priority: log.priority,
-            signal_count: log.signals ? Object.keys(log.signals).length : 0
+            signal_count: log.signals ? Object.keys(log.signals).length : 0,
+            sequence: log.sequence // Added for alive msg seq
           })
         }
       }
