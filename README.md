@@ -7,6 +7,7 @@ This project was developed as part of my internship at Ampere. It focuses on par
 ## Features
 
 - **Log Parsing:** Scans input log files to detect specific patterns and extract important log entries.
+- **Filtering Logic:** Allows users to filter logs by selectable criteria such as timestamps, functions, and protocols to customize the view.
 - **Change Detection:** Shows only changes in the logs to highlight meaningful transitions.
 - **Mode Change Identification:** Detects system mode changes such as sleep and shutdown and reflects them in the output.
 - **Duplicate Filtering:** Removes duplicate log entries to keep the analysis clean and focused.
@@ -19,6 +20,7 @@ This project was developed as part of my internship at Ampere. It focuses on par
 ## Components
 
 - **Log Parser:** Core engine that reads and processes log files to filter relevant data.
+- **Filtering Module:** Provides UI controls to select timestamps, functions, and protocols for log filtering.
 - **Change Detector:** Filters logs to show only state or value changes.
 - **Duplicate Filter:** Removes redundant log entries to enhance clarity.
 - **Mermaid Diagram Generator:** Translates filtered logs into Mermaid-compatible sequence diagrams.
@@ -28,10 +30,11 @@ This project was developed as part of my internship at Ampere. It focuses on par
 ## Usage
 
 1. Provide one or more log files as input.
-2. The parser analyzes logs, extracting key communication patterns while filtering duplicates and showing only changes.
-3. Mode changes like sleep and shutdown are identified and highlighted.
-4. Visualization is generated dynamically as Mermaid sequence diagrams.
-5. KPIs, timestamps, and other key information are displayed for detailed analysis.
+2. Use filtering options to select timestamps, functions, and protocols to focus the analysis.
+3. The parser analyzes logs, extracting key communication patterns while filtering duplicates and showing only changes.
+4. Mode changes like sleep and shutdown are identified and highlighted.
+5. Visualization is generated dynamically as Mermaid sequence diagrams.
+6. KPIs, timestamps, and other key information are displayed for detailed analysis.
 
 ## Technologies Used
 
@@ -39,7 +42,3 @@ This project was developed as part of my internship at Ampere. It focuses on par
 - Mermaid.js for diagram visualization
 - JavaScript/TypeScript for parsing logic
 - Node.js runtime
-
-## Author
-
-Developed by Ahmed Memni during the Ampere internship.
