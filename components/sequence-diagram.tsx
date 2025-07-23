@@ -403,7 +403,7 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
     }
 
     diagram += `
-    Note over VM1,VM4: Beginning of Sequence Diagram
+    Note over VM1,VM4: End of Sequence Diagram
     deactivate VM1
     deactivate VM2
     deactivate VM3
