@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCU-CDC Log Visualization</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-chartjs-2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        automotive: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Add Mermaid library -->
+    <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // Function to initialize and render Mermaid with the correct theme
+        function initializeMermaid() {
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: isDarkMode ? 'dark' : 'default',
+                themeVariables: {
+                    // Common variables for all diagrams
+                    primaryColor: isDarkMode ? '#38bdf8' : '#0ea5e9', // automotive-400 (dark) / automotive-500 (light)
+                    primaryTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                    primaryBorderColor: isDarkMode ? '#0284c7' : '#075985', // automotive-600 (dark) / automotive-800 (light)
+                    lineColor: isDarkMode ? '#7dd3fc' : '#0ea5e9', // automotive-300 (dark) / automotive-500 (light)
+                    secondaryColor: isDarkMode ? '#7dd3fc' : '#38bdf8', // automotive-300 (dark) / automotive-400 (light)
+                    tertiaryColor: isDarkMode ? '#bae6fd' : '#7dd3fc', // automotive-200 (dark) / automotive-300 (light)
+                    background: isDarkMode ? '#1f2937' : '#f9fafb', // gray-900 (dark) / gray-100 (light)
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '14px',
+                    textColor: isDarkMode ? '#f3f4f6' : '#1f2937', // gray-100 (dark) / gray-900 (light),
+
+                    // Sequence diagram-specific variables
+                    sequence: {
+                        actorBkg: isDarkMode ? '#0ea5e9' : '#38bdf8', // automotive-500 (dark) / automotive-400 (light)
+                        actorTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                        actorBorder: isDarkMode ? '#0284c7' : '#075985', // automotive-600 (dark) / automotive-800 (light)
+                        actorLineColor: isDarkMode ? '#7dd3fc' : '#0ea5e9', // automotive-300 (dark) / automotive-500 (light)
+                        signalColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                        signalTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                        labelBoxBkgColor: isDarkMode ? '#1f2937' : '#f0f9ff', // gray-900 (dark) / automotive-50 (light)
+                        labelTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                        loopTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                        noteBkgColor: isDarkMode ? '#374151' : '#e0f2fe', // gray-700 (dark) / automotive-100 (light)
+                        noteTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                        activationBkgColor: isDarkMode ? '#0284c7' : '#7dd3fc', // automotive-600 (dark) / automotive-300 (light)
+                        sequenceTextColor: isDarkMode ? '#f3f4f6' : '#0c4a6e', // gray-100 (dark) / automotive-900 (light)
+                    }
+                },
+                sequence: {
+                    mirrorActors: true, // Ensure consistent rendering
+                    wrap: true, // Wrap text for better readability
+                    messageFontFamily: 'Inter, sans-serif',
+                    messageFontSize: '14px',
+                    labelFontFamily: 'Inter, sans-serif',
+                    labelFontSize: '14px',
+                    noteFontFamily: 'Inter, sans-serif',
+                    noteFontSize: '14px',
+                    actorFontFamily: 'Inter, sans-serif',
+                    actorFontSize: '14px',
+                    messageMargin: 50,
+                    minHeight: 1500,
+                    bottomMarginAdj: 100,
+                    useMaxWidth: false,
+                }
+            });
+
+            // Force re-render of all Mermaid diagrams
+            const mermaidElements = document.querySelectorAll('.mermaid');
+            if (mermaidElements.length > 0) {
+                mermaidElements.forEach((el) => {
+                    // Store the diagram definition
+                    const diagramDefinition = el.textContent;
+                    // Clear the current content
+                    el.innerHTML = '';
+                    // Re-inject the diagram definition
+                    el.textContent = diagramDefinition;
+                });
+                // Re-render all diagrams
+                mermaid.contentLoaded();
+            }
+        }
+
+        // Initial Mermaid initialization
+        initializeMermaid();
+
+        // Watch for dark mode class changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    initializeMermaid(); // Re-initialize and re-render on class change
+                }
+            });
+        });
+
+        // Observe changes to the document's class attribute
+        observer.observe(document.documentElement, { attributes: true });
+
+        // Watch for React DOM updates to re-render Mermaid diagrams
+        document.addEventListener('DOMContentLoaded', () => {
+            const root = document.getElementById('root');
+            const reactObserver = new MutationObserver(() => {
+                if (document.querySelector('.mermaid')) {
+                    initializeMermaid(); // Re-render if Mermaid diagrams are present
+                }
+            });
+            reactObserver.observe(root, { childList: true, subtree: true });
+        });
+    </script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        // Register Chart.js components
+        Chart.register(
+            Chart.CategoryScale,
+            Chart.LinearScale,
+            Chart.PointElement,
+            Chart.LineElement,
+            Chart.BarElement,
+            Chart.Title,
+            Chart.Tooltip,
+            Chart.Legend
+        );
+
+        // Utility functions
+        const formatTimestamp = (timestamp) => {
+            return new Date(timestamp).toLocaleString();
+        };
+
+        const downloadCSV = (data, filename = 'vehicle_data.csv') => {
+            const headers = ['Timestamp', 'Sensor ID', 'Value', 'Source'];
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => [
+                    row.timestamp,
+                    row.sensor_id,
+                    row.value,
+                    row.source || 'Unknown'
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        };
+
+        // API service
+        const apiService = {
+            baseURL: 'http://localhost:5000',
+
+            async fetchUartData() {
+                try {
+                    const response = await axios.get(`${this.baseURL}/api/uart-data`);
+                    return response.data.map(item => ({ ...item, source: 'UART' }));
+                } catch (error) {
+                    throw new Error('Failed to fetch UART data');
+                }
+            },
+
+            async fetchLogData(filename) {
+                try {
+                    const response = await axios.get(`${this.baseURL}/api/log-data/${filename}`);
+                    return response.data.map(item => ({ ...item, source: 'Log' }));
+                } catch (error) {
+                    throw new Error(`Failed to fetch log data from ${filename}`);
+                }
+            }
+        };
+
+        // Header Component
+        const Header = ({ darkMode, toggleDarkMode }) => {
+            return (
+                <header className="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center">
+                                <div className="flex-shrink-0">
+                                    <h1 className="text-2xl font-bold text-automotive-700 dark:text-automotive-300">
+                                        PCU-CDC Log Visualization
+                                    </h1>
+                                </div>
+                            </div>
+                            <div className="flex items-center">
+                                <button
+                                    onClick={toggleDarkMode}
+                                    className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                                    aria-label="Toggle dark mode"
+                                >
+                                    {darkMode ? (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            );
+        };
+
+        // Log File Input Component
+        const LogFileInput = ({ onLoadLogFile, loading }) => {
+            const [filename, setFilename] = useState('logs.csv');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (filename.trim()) {
+                    onLoadLogFile(filename.trim());
+                }
+            };
+
+            return (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Load Log File</h2>
+                    <form onSubmit={handleSubmit} className="flex gap-4">
+                        <div className="flex-1">
+                            <input
+                                type="text"
+                                value={filename}
+                                onChange={(e) => setFilename(e.target.value)}
+                                placeholder="Enter log file name (e.g., logs.csv)"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-automotive-500 focus:border-automotive-500 dark:bg-gray-700 dark:text-white"
+                                disabled={loading}
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading || !filename.trim()}
+                            className="px-6 py-2 bg-automotive-600 text-white rounded-md hover:bg-automotive-700 focus:outline-none focus:ring-2 focus:ring-automotive-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        >
+                            {loading ? 'Loading...' : 'Load'}
+                        </button>
+                    </form>
+                </div>
+            );
+        };
+
+        // Filter Section Component
+        const FilterSection = ({ data, filters, onFiltersChange, isPolling, onTogglePolling }) => {
+            const sensorIds = useMemo(() => {
+                const ids = [...new Set(data.map(item => item.sensor_id))];
+                return ids.sort();
+            }, [data]);
+
+            const timeRanges = [
+                { value: 'all', label: 'All Time' },
+                { value: '5min', label: 'Last 5 Minutes' },
+                { value: '1hour', label: 'Last Hour' },
+                { value: '24hour', label: 'Last 24 Hours' }
+            ];
+
+            return (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Sensor ID:
+                            </label>
+                            <select
+                                value={filters.sensorId}
+                                onChange={(e) => onFiltersChange({ ...filters, sensorId: e.target.value })}
+                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-automotive-500 focus:border-automotive-500 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="">All Sensors</option>
+                                {sensorIds.map(id => (
+                                    <option key={id} value={id}>{id}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Time Range:
+                            </label>
+                            <select
+                                value={filters.timeRange}
+                                onChange={(e) => onFiltersChange({ ...filters, timeRange: e.target.value })}
+                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-automotive-500 focus:border-automotive-500 dark:bg-gray-700 dark:text-white"
+                            >
+                                {timeRanges.map(range => (
+                                    <option key={range.value} value={range.value}>{range.label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-2 ml-auto">
+                            <button
+                                onClick={onTogglePolling}
+                                className={`px-4 py-2 rounded-md font-medium transition-colors duration-200 ${isPolling
+                                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                                    : 'bg-green-600 hover:bg-green-700 text-white'
+                                    }`}
+                            >
+                                {isPolling ? 'Pause Updates' : 'Resume Updates'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Summary Cards Component
+        const SummaryCards = ({ data }) => {
+            const stats = useMemo(() => {
+                if (data.length === 0) {
+                    return {
+                        totalLogs: 0,
+                        uniqueSensors: 0,
+                        minValue: 0,
+                        maxValue: 0,
+                        latestTimestamp: 'N/A'
+                    };
+                }
+
+                const values = data.map(item => item.value).filter(v => typeof v === 'number');
+                const timestamps = data.map(item => new Date(item.timestamp)).sort((a, b) => b - a);
+
+                return {
+                    totalLogs: data.length,
+                    uniqueSensors: new Set(data.map(item => item.sensor_id)).size,
+                    minValue: values.length > 0 ? Math.min(...values) : 0,
+                    maxValue: values.length > 0 ? Math.max(...values) : 0,
+                    latestTimestamp: timestamps.length > 0 ? formatTimestamp(timestamps[0]) : 'N/A'
+                };
+            }, [data]);
+
+            const cards = [
+                { title: 'Total Logs', value: stats.totalLogs.toLocaleString(), icon: '📊' },
+                { title: 'Unique Sensors', value: stats.uniqueSensors, icon: '🔧' },
+                { title: 'Min Value', value: stats.minValue.toFixed(2), icon: '📉' },
+                { title: 'Max Value', value: stats.maxValue.toFixed(2), icon: '📈' }
+            ];
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    {cards.map((card, index) => (
+                        <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                            <div className="flex items-center">
+                                <div className="text-2xl mr-3">{card.icon}</div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{card.title}</p>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        // Chart Component
+        const ChartComponent = ({ data, chartType, onChartTypeChange }) => {
+            const chartData = useMemo(() => {
+                if (data.length === 0) return null;
+
+                const sensorIds = [...new Set(data.map(item => item.sensor_id))];
+                const colors = [
+                    'rgb(59, 130, 246)', // blue
+                    'rgb(16, 185, 129)', // green
+                    'rgb(245, 101, 101)', // red
+                    'rgb(251, 191, 36)', // yellow
+                    'rgb(139, 92, 246)', // purple
+                    'rgb(236, 72, 153)', // pink
+                ];
+
+                if (chartType === 'line') {
+                    const datasets = sensorIds.map((sensorId, index) => {
+                        const sensorData = data
+                            .filter(item => item.sensor_id === sensorId)
+                            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                            .slice(-50); // Limit to last 50 points for performance
+
+                        return {
+                            label: sensorId,
+                            data: sensorData.map(item => ({
+                                x: item.timestamp,
+                                y: item.value
+                            })),
+                            borderColor: colors[index % colors.length],
+                            backgroundColor: colors[index % colors.length] + '20',
+                            tension: 0.1,
+                            fill: false
+                        };
+                    });
+
+                    return {
+                        datasets
+                    };
+                } else {
+                    // Bar chart - show average values per sensor
+                    const avgValues = sensorIds.map(sensorId => {
+                        const sensorData = data.filter(item => item.sensor_id === sensorId);
+                        const avg = sensorData.reduce((sum, item) => sum + item.value, 0) / sensorData.length;
+                        return avg;
+                    });
+
+                    return {
+                        labels: sensorIds,
+                        datasets: [{
+                            label: 'Average Value',
+                            data: avgValues,
+                            backgroundColor: colors.slice(0, sensorIds.length),
+                            borderColor: colors.slice(0, sensorIds.length),
+                            borderWidth: 1
+                        }]
+                    };
+                }
+            }, [data, chartType]);
+
+            const options = useMemo(() => {
+                const baseOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: chartType === 'line' ? 'Sensor Values Over Time' : 'Average Sensor Values'
+                        }
+                    }
+                };
+
+                if (chartType === 'line') {
+                    return {
+                        ...baseOptions,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    displayFormats: {
+                                        minute: 'HH:mm',
+                                        hour: 'HH:mm'
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    };
+                } else {
+                    return {
+                        ...baseOptions,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    };
+                }
+            }, [chartType]);
+
+            if (!chartData) {
+                return (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                        <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+                            No data available for visualization
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Data Visualization</h2>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => onChartTypeChange('line')}
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${chartType === 'line'
+                                    ? 'bg-automotive-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                    }`}
+                            >
+                                Line Chart
+                            </button>
+                            <button
+                                onClick={() => onChartTypeChange('bar')}
+                                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${chartType === 'bar'
+                                    ? 'bg-automotive-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                    }`}
+                            >
+                                Bar Chart
+                            </button>
+                        </div>
+                    </div>
+                    <div className="h-64">
+                        {chartType === 'line' ? (
+                            <Line data={chartData} options={options} />
+                        ) : (
+                            <Bar data={chartData} options={options} />
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Data Table Component
+        const DataTable = ({ data, onDownloadCSV }) => {
+            const [sortField, setSortField] = useState('timestamp');
+            const [sortDirection, setSortDirection] = useState('desc');
+            const [currentPage, setCurrentPage] = useState(1);
+            const itemsPerPage = 10;
+
+            const sortedData = useMemo(() => {
+                return [...data].sort((a, b) => {
+                    let aVal = a[sortField];
+                    let bVal = b[sortField];
+
+                    if (sortField === 'timestamp') {
+                        aVal = new Date(aVal);
+                        bVal = new Date(bVal);
+                    }
+
+                    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }, [data, sortField, sortDirection]);
+
+            const paginatedData = useMemo(() => {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                return sortedData.slice(startIndex, startIndex + itemsPerPage);
+            }, [sortedData, currentPage]);
+
+            const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+
+            const handleSort = (field) => {
+                if (sortField === field) {
+                    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                } else {
+                    setSortField(field);
+                    setSortDirection('asc');
+                }
+                setCurrentPage(1);
+            };
+
+            const SortIcon = ({ field }) => {
+                if (sortField !== field) return null;
+                return (
+                    <span className="ml-1">
+                        {sortDirection === 'asc' ? '↑' : '↓'}
+                    </span>
+                );
+            };
+
+            return (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Data Table</h2>
+                        <button
+                            onClick={() => onDownloadCSV(data)}
+                            className="px-4 py-2 bg-automotive-600 text-white rounded-md hover:bg-automotive-700 focus:outline-none focus:ring-2 focus:ring-automotive-500 focus:ring-offset-2 transition-colors duration-200"
+                        >
+                            Download CSV
+                        </button>
+                    </div>
+
+                    {data.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            No data available
+                        </div>
+                    ) : (
+                        <>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                onClick={() => handleSort('timestamp')}
+                                            >
+                                                Timestamp <SortIcon field="timestamp" />
+                                            </th>
+                                            <th
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                onClick={() => handleSort('sensor_id')}
+                                            >
+                                                Sensor ID <SortIcon field="sensor_id" />
+                                            </th>
+                                            <th
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                onClick={() => handleSort('value')}
+                                            >
+                                                Value <SortIcon field="value" />
+                                            </th>
+                                            <th
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                onClick={() => handleSort('source')}
+                                            >
+                                                Source <SortIcon field="source" />
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                        {paginatedData.map((item, index) => (
+                                            <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                    {formatTimestamp(item.timestamp)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                    {item.sensor_id}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                    {typeof item.value === 'number' ? item.value.toFixed(2) : item.value}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.source === 'UART'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                                                        : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+                                                        }`}>
+                                                        {item.source}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, sortedData.length)} of {sortedData.length} results
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                            disabled={currentPage === 1}
+                                            className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                        >
+                                            Previous
+                                        </button>
+                                        <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        // Error Alert Component
+        const ErrorAlert = ({ error, onDismiss }) => {
+            if (!error) return null;
+
+            return (
+                <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-md p-4 mb-6">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                        </div>
+                        <div className="ml-auto pl-3">
+                            <button
+                                onClick={onDismiss}
+                                className="text-red-400 hover:text-red-600 dark:hover:text-red-300"
+                            >
+                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Loading Spinner Component
+        const LoadingSpinner = () => (
+            <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-automotive-600"></div>
+                <span className="ml-2 text-gray-600 dark:text-gray-400">Loading...</span>
+            </div>
+        );
+
+        // Main App Component
+        const App = () => {
+            const [darkMode, setDarkMode] = useState(false);
+            const [uartData, setUartData] = useState([]);
+            const [logData, setLogData] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [isPolling, setIsPolling] = useState(true);
+            const [chartType, setChartType] = useState('line');
+            const [filters, setFilters] = useState({
+                sensorId: '',
+                timeRange: 'all'
+            });
+
+            // Apply dark mode to document
+            useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [darkMode]);
+
+            // Filter data based on current filters
+            const filteredData = useMemo(() => {
+                let combined = [...uartData, ...logData];
+
+                // Filter by sensor ID
+                if (filters.sensorId) {
+                    combined = combined.filter(item => item.sensor_id === filters.sensorId);
+                }
+
+                // Filter by time range
+                if (filters.timeRange !== 'all') {
+                    const now = new Date();
+                    let cutoffTime;
+
+                    switch (filters.timeRange) {
+                        case '5min':
+                            cutoffTime = new Date(now.getTime() - 5 * 60 * 1000);
+                            break;
+                        case '1hour':
+                            cutoffTime = new Date(now.getTime() - 60 * 60 * 1000);
+                            break;
+                        case '24hour':
+                            cutoffTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                            break;
+                        default:
+                            cutoffTime = null;
+                    }
+
+                    if (cutoffTime) {
+                        combined = combined.filter(item => new Date(item.timestamp) >= cutoffTime);
+                    }
+                }
+
+                return combined.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }, [uartData, logData, filters]);
+
+            // Fetch UART data
+            const fetchUartData = useCallback(async () => {
+                try {
+                    const data = await apiService.fetchUartData();
+                    setUartData(data.slice(-100)); // Keep only last 100 entries for performance
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                }
+            }, []);
+
+            // Load log file data
+            const loadLogFile = useCallback(async (filename) => {
+                setLoading(true);
+                try {
+                    const data = await apiService.fetchLogData(filename);
+                    setLogData(data.slice(-100)); // Keep only last 100 entries for performance
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }, []);
+
+            // Polling effect for UART data
+            useEffect(() => {
+                if (isPolling) {
+                    fetchUartData(); // Initial fetch
+                    const interval = setInterval(fetchUartData, 5000);
+                    return () => clearInterval(interval);
+                }
+            }, [isPolling, fetchUartData]);
+
+            const toggleDarkMode = () => setDarkMode(!darkMode);
+            const togglePolling = () => setIsPolling(!isPolling);
+            const dismissError = () => setError(null);
+
+            return (
+                <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+                    <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <ErrorAlert error={error} onDismiss={dismissError} />
+
+                        <LogFileInput onLoadLogFile={loadLogFile} loading={loading} />
+
+                        <FilterSection
+                            data={filteredData}
+                            filters={filters}
+                            onFiltersChange={setFilters}
+                            isPolling={isPolling}
+                            onTogglePolling={togglePolling}
+                        />
+
+                        <SummaryCards data={filteredData} />
+
+                        {loading ? (
+                            <LoadingSpinner />
+                        ) : (
+                            <>
+                                <ChartComponent
+                                    data={filteredData}
+                                    chartType={chartType}
+                                    onChartTypeChange={setChartType}
+                                />
+
+                                <DataTable
+                                    data={filteredData}
+                                    onDownloadCSV={downloadCSV}
+                                />
+                            </>
+                        )}
+                    </main>
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>

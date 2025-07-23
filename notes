@@ -1,0 +1,16 @@
+the filtering logic is in sequence diagram filtering avaialble is of failure only appearing once for sleep to appear the first and last adn for the gvm up and down to appear only when changes  timestamps is appearing left of each log and we filter all the logs from the file like the python code does and than we filter the code for when appearing it to test u can open devtols to see the rest 
+
+data is being processed globality in lib  one for generation one for globallaly from json file which is ecu communication service  
+
+in header in the buttons there s a handlefile function  all which does what the python testing code does it parses each line deletes all the zeros at teh beginning and checks for the log lines and than from that we create a json file which has all the logs and pass it into data  
+
+in order to add the mode u can add a note highling the mode swhich in deep sleep or the other and 
+
+for affichaging in mcu u only show at first the one without modifications and than from the last statue u only show the one modified     
+// 00-00:00:08.185 PO MD	HVPM_ProcControlCmd: Received ctrlStartCommunication(1) from HVPM: 14815 ms qnx vers mcu
+// 00-00:00:08.185 PO MD	pmCpuIf_EventNotifyWakeupLineStat: 83 11 02 01 mcu vers qnx 
+// 00-00:00:08.220 PO LO	Response of PM EventCmd: 03 11 02 01 qnx vers mcu
+// 00-00:00:09.059 CO MD	alive msg seq: 1 ml qnx lil mcu 
+// oem_pm[CSomeIpProcessor.cpp: 302]: OEM PM SomeIpProcessor
+// alive msg seq: 1 ml qnx lil mcu 
+add to the documentation rcr checking and add to 

@@ -1,0 +1,784 @@
+[
+  {
+    "timestamp": "2025-01-01T00:00:02.210000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:vmid for guest[0] with name la",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10000,
+      "timestamp": 1735686002210,
+      "function": "vmid for guest[0] with name la and vmid=2 manual_mode=1 default=0 powerstatus /dev/pdbg/qvm/la/power_status power_key /dev/qvm/la/powerkey safe_mode_handling 1",
+      "component": "LA",
+      "line_number": 2793
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:02.210000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:vmid for guest[1] with name la1",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10001,
+      "timestamp": 1735686002210,
+      "function": "vmid for guest[1] with name la1 and vmid=5 manual_mode=1 default=0 powerstatus /dev/pdbg/qvm/la1/power_status power_key /dev/qvm/la1/powerkey safe_mode_handling 0",
+      "component": "LA1",
+      "line_number": 2793
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.550000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Failure open /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10002,
+      "timestamp": 1735686003550,
+      "function": "Failure open /dev/pdbg/qvm/la1/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA1",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.552000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Failure open /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10003,
+      "timestamp": 1735686003552,
+      "function": "Failure open /dev/pdbg/qvm/la/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.552000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Failure open /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10004,
+      "timestamp": 1735686003552,
+      "function": "Failure open /dev/pdbg/qvm/la1/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA1",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.552000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Failure open /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10005,
+      "timestamp": 1735686003552,
+      "function": "Failure open /dev/pdbg/qvm/la1/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA1",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.553000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Failure open /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10006,
+      "timestamp": 1735686003553,
+      "function": "Failure open /dev/pdbg/qvm/la/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.554000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Failure open /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10007,
+      "timestamp": 1735686003554,
+      "function": "Failure open /dev/pdbg/qvm/la1/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA1",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.554000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM1",
+    "protocol": "UART",
+    "type": "START_SOC_COMM_REQ",
+    "raw": "UART:START_SOC_COMM_REQ:buffer : 0x01 0x11 0x02 0x00 0x01 0x01",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "START_SOC_COMM_REQ",
+      "sequence_id": 10008,
+      "timestamp": 1735686003554,
+      "function": "[START_SOC_COMM_REQ] buffer : 0x01 0x11 0x02 0x00 0x01 0x01",
+      "component": "OEMPMMsgTranslator",
+      "line_number": 128
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.557000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Failure open /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10009,
+      "timestamp": 1735686003557,
+      "function": "Failure open /dev/pdbg/qvm/la1/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA1",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:03.561000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Failure open /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10010,
+      "timestamp": 1735686003561,
+      "function": "Failure open /dev/pdbg/qvm/la/power_status node(O_RDONLY) ERR:2(No such file or directory)",
+      "component": "LA",
+      "line_number": 555
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:04.194000Z",
+    "source_vm": "VM1",
+    "destination_vm": "VM2",
+    "protocol": "UART",
+    "type": "OEMPM_EVT_START_SOC_COMM_RESP",
+    "raw": "UART:OEMPM_EVT_START_SOC_COMM_RESP:mcu response",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "OEMPM_EVT_START_SOC_COMM_RESP",
+      "sequence_id": 10011,
+      "timestamp": 1735686004194,
+      "function": "[OEMPM_EVT_START_SOC_COMM_RESP] mcu response",
+      "component": "MCUMgrTranslator",
+      "line_number": 176
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:04.195000Z",
+    "source_vm": "VM1",
+    "destination_vm": "VM2",
+    "protocol": "UART",
+    "type": "OEMPM_EVT_ASSERTION_WAKEUP_LINE",
+    "raw": "UART:OEMPM_EVT_ASSERTION_WAKEUP_LINE:mcu event",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "OEMPM_EVT_ASSERTION_WAKEUP_LINE",
+      "sequence_id": 10012,
+      "timestamp": 1735686004195,
+      "function": "[OEMPM_EVT_ASSERTION_WAKEUP_LINE] mcu event",
+      "component": "MCUMgrTranslator",
+      "line_number": 229
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:04.195000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM1",
+    "protocol": "UART",
+    "type": "ASSERTION_WAKEUPLINE_RESP",
+    "raw": "UART:ASSERTION_WAKEUPLINE_RESP:buffer : 0x03 0x11 0x02 0x00 0x01 0x01",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "ASSERTION_WAKEUPLINE_RESP",
+      "sequence_id": 10013,
+      "timestamp": 1735686004195,
+      "function": "[ASSERTION_WAKEUPLINE_RESP] buffer : 0x03 0x11 0x02 0x00 0x01 0x01",
+      "component": "OEMPMMsgTranslator",
+      "line_number": 128
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:12.213000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10014,
+      "timestamp": 1735686012213,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 585
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:12.213000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10015,
+      "timestamp": 1735686012213,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 585
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:13.557000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10016,
+      "timestamp": 1735686013557,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 585
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:00:13.559000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10017,
+      "timestamp": 1735686013559,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 585
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:20.621000Z",
+    "source_vm": "VM1",
+    "destination_vm": "VM2",
+    "protocol": "UART",
+    "type": "OEMPM_EVT_DEASSERTION_WAKEUP_LINE",
+    "raw": "UART:OEMPM_EVT_DEASSERTION_WAKEUP_LINE:mcu event",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "OEMPM_EVT_DEASSERTION_WAKEUP_LINE",
+      "sequence_id": 10018,
+      "timestamp": 1735686080621,
+      "function": "[OEMPM_EVT_DEASSERTION_WAKEUP_LINE] mcu event",
+      "component": "MCUMgrTranslator",
+      "line_number": 224
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:20.621000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM1",
+    "protocol": "UART",
+    "type": "DEASSERTION_WAKEUPLINE_RESP",
+    "raw": "UART:DEASSERTION_WAKEUPLINE_RESP:buffer : 0x03 0x11 0x02 0x00 0x01 0x00",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "DEASSERTION_WAKEUPLINE_RESP",
+      "sequence_id": 10019,
+      "timestamp": 1735686080621,
+      "function": "[DEASSERTION_WAKEUPLINE_RESP] buffer : 0x03 0x11 0x02 0x00 0x01 0x00",
+      "component": "OEMPMMsgTranslator",
+      "line_number": 128
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.622000Z",
+    "source_vm": "VM1",
+    "destination_vm": "VM2",
+    "protocol": "UART",
+    "type": "DEASSERTED_WAKEUP_DS_REQ",
+    "raw": "UART:DEASSERTED_WAKEUP_DS_REQ:mcu event",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "DEASSERTED_WAKEUP_DS_REQ",
+      "sequence_id": 10020,
+      "timestamp": 1735686085622,
+      "function": "[DEASSERTED_WAKEUP_DS_REQ] mcu event",
+      "component": "MCUMgrTranslator",
+      "line_number": 76
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.623000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM1",
+    "protocol": "UART",
+    "type": "DEASSERTED_WAKEUP_DS_RESP",
+    "raw": "UART:DEASSERTED_WAKEUP_DS_RESP:buffer : 0x03 0x11 0x01 0x00 0x01 0x01",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "DEASSERTED_WAKEUP_DS_RESP",
+      "sequence_id": 10021,
+      "timestamp": 1735686085623,
+      "function": "[DEASSERTED_WAKEUP_DS_RESP] buffer : 0x03 0x11 0x01 0x00 0x01 0x01",
+      "component": "OEMPMMsgTranslator",
+      "line_number": 128
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.625000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10022,
+      "timestamp": 1735686085625,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 585
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.627000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:sleep to /dev/qvm/la/powerkey",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10023,
+      "timestamp": 1735686085627,
+      "function": "sleep to /dev/qvm/la/powerkey",
+      "component": "LA",
+      "line_number": 430
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.628000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10024,
+      "timestamp": 1735686085628,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 585
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.631000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:sleep to /dev/qvm/la1/powerkey",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10025,
+      "timestamp": 1735686085631,
+      "function": "sleep to /dev/qvm/la1/powerkey",
+      "component": "LA1",
+      "line_number": 430
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.634000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10026,
+      "timestamp": 1735686085634,
+      "function": "Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+      "component": "LA",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.634000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10027,
+      "timestamp": 1735686085634,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.635000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10028,
+      "timestamp": 1735686085635,
+      "function": "Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+      "component": "LA1",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:25.635000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10029,
+      "timestamp": 1735686085635,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.139000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10030,
+      "timestamp": 1735686086139,
+      "function": "Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+      "component": "LA",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.139000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10031,
+      "timestamp": 1735686086139,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.139000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10032,
+      "timestamp": 1735686086139,
+      "function": "Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+      "component": "LA1",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.139000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10033,
+      "timestamp": 1735686086139,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.641000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10034,
+      "timestamp": 1735686086641,
+      "function": "Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+      "component": "LA",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.641000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10035,
+      "timestamp": 1735686086641,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.641000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10036,
+      "timestamp": 1735686086641,
+      "function": "Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+      "component": "LA1",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:26.641000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10037,
+      "timestamp": 1735686086641,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.143000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10038,
+      "timestamp": 1735686087143,
+      "function": "Path:/dev/pdbg/qvm/la1/power_status, Value:49 10 0 2",
+      "component": "LA1",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.143000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM up /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10039,
+      "timestamp": 1735686087143,
+      "function": "GVM up /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.143000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10040,
+      "timestamp": 1735686087143,
+      "function": "Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+      "component": "LA",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.143000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10041,
+      "timestamp": 1735686087143,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 667
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.645000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:Path:/dev/pdbg/qvm/la1/power_status, Value:48 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10042,
+      "timestamp": 1735686087645,
+      "function": "Path:/dev/pdbg/qvm/la1/power_status, Value:48 10 0 2",
+      "component": "LA1",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.645000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM4",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA1",
+    "raw": "UART:POWER_STATUS_LA1:GVM down /dev/pdbg/qvm/la1/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA1",
+      "sequence_id": 10043,
+      "timestamp": 1735686087645,
+      "function": "GVM down /dev/pdbg/qvm/la1/power_status",
+      "component": "LA1",
+      "line_number": 663
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.646000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10044,
+      "timestamp": 1735686087646,
+      "function": "Path:/dev/pdbg/qvm/la/power_status, Value:49 10 0 2",
+      "component": "LA",
+      "line_number": 659
+    }
+  },
+  {
+    "timestamp": "2025-01-01T00:01:27.646000Z",
+    "source_vm": "VM2",
+    "destination_vm": "VM3",
+    "protocol": "UART",
+    "type": "POWER_STATUS_LA",
+    "raw": "UART:POWER_STATUS_LA:GVM up /dev/pdbg/qvm/la/power_status",
+    "payload": {
+      "protocol": "UART",
+      "message_type": "POWER_STATUS_LA",
+      "sequence_id": 10045,
+      "timestamp": 1735686087646,
+      "function": "GVM up /dev/pdbg/qvm/la/power_status",
+      "component": "LA",
+      "line_number": 667
+    }
+  }
+]
