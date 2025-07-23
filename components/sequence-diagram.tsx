@@ -322,13 +322,13 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
         const count = msgs.length
         const isSignalChange = Array.isArray(firstMsg.payload.changes) && firstMsg.payload.signals !== undefined && firstMsg.payload.signals !== null
         const displayName = firstMsg.protocol === "MODE" && (firstMsg.payload.message_type === "QUICK_BOOT" || firstMsg.payload.message_type === "COLD_BOOT")
-          ? (firstMsg.payload.message_type === "QUICK_BOOT" ? "Sleep Request" : "Shutdown")
+          ? (firstMsg.payload.message_type === "QUICK_BOOT" ? "Sleep" : "Shutdown")
           : firstMsg.payload.function || firstMsg.type
         const protocol = firstMsg.protocol
         const protocolBadge = getProtocolBadge(firstMsg.protocol)
 
         if (protocol === "MODE" && (firstMsg.payload.message_type === "QUICK_BOOT" || firstMsg.payload.message_type === "COLD_BOOT")) {
-          const currentModeState = firstMsg.payload.message_type === "QUICK_BOOT" ? "Sleep Request" : "Shutdown"
+          const currentModeState = firstMsg.payload.message_type === "QUICK_BOOT" ? "Sleep" : "Shutdown"
           if (lastModeState === null || currentModeState !== lastModeState) {
             diagram += `    Note over VM1,VM4: [${protocol}] ${displayName}${protocolBadge}${count > 1 ? ` (${count}x)` : ""}\n`
             lastModeState = currentModeState
@@ -338,7 +338,7 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
           // modes 
           if (sleepEChange) {
             const sleepEValue = sleepEChange.match(/SLEEP_E\((\d+)\)/)?.[1]
-            const currentSleepEState = sleepEValue === "0" ? "Shutdown" : sleepEValue === "1" ? "Sleep Request" : null
+            const currentSleepEState = sleepEValue === "0" ? "Shutdown" : sleepEValue === "1" ? "Sleep" : null
             if (currentSleepEState && (lastSleepEState === null || currentSleepEState !== lastSleepEState)) {
               diagram += `    Note over VM1,VM4: [${protocol}] ${currentSleepEState}${protocolBadge}${count > 1 ? ` (${count}x)` : ""}\n`
               lastSleepEState = currentSleepEState
@@ -361,18 +361,18 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
       let lastModeState: string | null = null
       let lastSleepEState: string | null = null
 
-    
+
       messagesToShow.forEach((msg, index) => {
         const reverseIndex = messagesToShow.length - index // This makes last message = 1
         const isSignalChange = Array.isArray(msg.payload.changes) && msg.payload.signals !== undefined && msg.payload.signals !== null
         const displayName = msg.protocol === "MODE" && (msg.payload.message_type === "QUICK_BOOT" || msg.payload.message_type === "COLD_BOOT")
-          ? (msg.payload.message_type === "QUICK_BOOT" ? "Sleep Request" : "Shutdown")
+          ? (msg.payload.message_type === "QUICK_BOOT" ? "Sleep" : "Shutdown")
           : msg.payload.function || msg.type
         const protocol = msg.protocol
         const protocolBadge = getProtocolBadge(msg.protocol)
 
         if (protocol === "MODE" && (msg.payload.message_type === "QUICK_BOOT" || msg.payload.message_type === "COLD_BOOT")) {
-          const currentModeState = msg.payload.message_type === "QUICK_BOOT" ? "Sleep Request" : "Shutdown"
+          const currentModeState = msg.payload.message_type === "QUICK_BOOT" ? "Sleep" : "Shutdown"
           if (lastModeState === null || currentModeState !== lastModeState) {
             // Display QUICK_BOOT and COLD_BOOT as notes from VM1 to VM4
             diagram += `    Note over VM1,VM4: [${protocol}] ${displayName}${protocolBadge} #${reverseIndex}\n`
@@ -382,7 +382,7 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
           const sleepEChange = msg.payload.changes.find((change: string) => change.match(/^SLEEP_E\(\d+\)$/))
           if (sleepEChange) {
             const sleepEValue = sleepEChange.match(/SLEEP_E\((\d+)\)/)?.[1]
-            const currentSleepEState = sleepEValue === "0" ? "Shutdown" : sleepEValue === "1" ? "Sleep Request" : null
+            const currentSleepEState = sleepEValue === "0" ? "Shutdown" : sleepEValue === "1" ? "Sleep" : null
             if (currentSleepEState && (lastSleepEState === null || currentSleepEState !== lastSleepEState)) {
               diagram += `    Note over VM1,VM4: [${protocol}] ${currentSleepEState}${protocolBadge} #${reverseIndex}\n`
               lastSleepEState = currentSleepEState
