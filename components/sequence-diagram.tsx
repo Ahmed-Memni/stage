@@ -299,9 +299,9 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
     activate VM4
 `
 
-    // Helper to extract exact time from timestamp (e.g., "2025-01-01T00:00:08.100000Z" -> "00:00:08") 
+    // Helper to extract exact time with milliseconds from timestamp (e.g., "2025-01-01T00:00:08.061Z" -> "00:00:08.061") 
     const formatTimestamp = (timestamp: string) => {
-      const match = timestamp.match(/T(\d{2}:\d{2}:\d{2})/)
+      const match = timestamp.match(/T(\d{2}:\d{2}:\d{2}\.\d{3})/)
       return match ? match[1] : timestamp
     }
 

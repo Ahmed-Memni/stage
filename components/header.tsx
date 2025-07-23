@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Sun, Moon, Play, Pause, Activity, Upload, Trash2 } from "lucide-react"
@@ -27,7 +28,7 @@ interface ParsedLog {
   routing?: string
   duration?: string
   priority?: string
-  sequence?: number // Added for alive msg seq
+  sequence?: number
 }
 
 export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitoring }: HeaderProps) {
@@ -115,29 +116,24 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
     setIsLoadDialogOpen(false)
   }
 
-  // Parse both OEM and MCU logs
   const parseLogs = (fileContent: string): ParsedLog[] => {
     console.log("parseLogs: Starting to parse file content")
 
-    // OEM log pattern
     const oemPattern = new RegExp(
       `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+oem_pm\\.\\d+\\s+oem_pm\\s+\\d+\\s+oem_pm\\[(.*?):\\s*(\\d+)\\]:\\s*(.+)`,
       'g'
     )
 
-    // Boot log pattern with timestamp
     const bootPatternWithTimestamp = new RegExp(
-      `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}).*?(quick\\s*boot|cold\\s*boot).*`,
+      `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?).*?(quick\\s*boot|cold\\s*boot).*`,
       'gi'
     )
 
-    // Boot log pattern without timestamp
     const bootPatternNoTimestamp = new RegExp(
       `(quick\\s*boot|cold\\s*boot)`,
       'gi'
     )
 
-    // MCU log patterns
     const uartPattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+pmCpuIf_EventNotifyWakeupLineStat:\\s+([0-9A-Fa-f\\s]+)$`,
       'g'
@@ -154,12 +150,10 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+Response of PM EventCmd:\\s+([0-9A-Fa-f\\s]+)$`,
       'g'
     )
-    // Some/IP pattern
     const someIpPattern = new RegExp(
       `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+oem_pm\\.\\d+\\s+oem_pm\\s+\\d+\\s+oem_pm\\[CSomeIpProcessor.cpp:\\s*(\\d+)\\]:\\s*(CSomeIpProcessor\\s+(sendSafeModeEvents|ePowerMode|eSleepOrder)\\s*:\\s*.+)`,
       'g'
     )
-    // Alive message sequence pattern
     const aliveMsgPattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+CO\\s+(HI|MD|LO)\\s+alive msg seq:\\s+(\\d+)$`,
       'g'
@@ -182,21 +176,21 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
     const lines = fileContent.split('\n')
 
     lines.forEach((line, index) => {
-      if (!line.trim()) return // Skip empty lines
+      if (!line.trim()) return
 
-      // Clean line (remove null bytes and invisible characters)
       const cleanedLine = line.replace(/[^\x20-\x7E\t\n]/g, '')
       console.log(`parseLogs: Processing line ${index + 1}: ${cleanedLine.slice(0, 50)}...`)
 
-      // Try Boot pattern with timestamp
       bootPatternWithTimestamp.lastIndex = 0
       const bootMatchWithTimestamp = bootPatternWithTimestamp.exec(cleanedLine)
       if (bootMatchWithTimestamp) {
-        const [, timestampStr, bootType] = bootMatchWithTimestamp
+        let [, timestampStr, bootType] = bootMatchWithTimestamp
         console.log(`parseLogs: Boot match with timestamp at line ${index + 1}: ${bootType}`)
 
         try {
-          // Parse timestamp
+          if (!timestampStr.includes('.')) {
+            timestampStr += '.000'
+          }
           const timestampMatch = timestampStr.match(/(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/)
           if (!timestampMatch) {
             invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp format: ${timestampStr}`)
@@ -251,7 +245,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             return
           }
 
-          lastValidTimestamp = timestamp // Update last valid timestamp
+          lastValidTimestamp = timestamp
           const event = bootType.toLowerCase().includes("quick") ? "QUICK_BOOT" : "COLD_BOOT"
           logs.push({
             timestamp,
@@ -260,7 +254,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             event,
             message: cleanedLine.trim()
           })
-          console.log(`parseLogs: Added Boot log with timestamp - Component: BootManager, Event: ${event}, Line: ${index + 1}`)
+          console.log(`parseLogs: Added Boot log with timestamp - Component: BootManager, Event: ${event}, Line: ${index + 1}, Timestamp: ${timestamp.toISOString()}`)
         } catch (error) {
           console.error(`parseLogs: Error parsing Boot line with timestamp ${index + 1}: ${cleanedLine}`, error)
           invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: ${timestampStr}`)
@@ -268,7 +262,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         return
       }
 
-      // Try Boot pattern without timestamp
       bootPatternNoTimestamp.lastIndex = 0
       const bootMatchNoTimestamp = bootPatternNoTimestamp.exec(cleanedLine)
       if (bootMatchNoTimestamp) {
@@ -276,7 +269,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         console.log(`parseLogs: Boot match without timestamp at line ${index + 1}: ${bootType}`)
 
         try {
-          // Use the last valid timestamp or a default if none exists
           const timestamp = lastValidTimestamp || new Date('2025-01-01T00:00:00.000Z')
           const event = bootType.toLowerCase().includes("quick") ? "QUICK_BOOT" : "COLD_BOOT"
           logs.push({
@@ -294,14 +286,12 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         return
       }
 
-      // Try OEM pattern
       oemPattern.lastIndex = 0
       const oemMatch = oemPattern.exec(cleanedLine)
       if (oemMatch) {
         const [, timestampStr, file, lineNumber, rawMessage] = oemMatch
         console.log(`parseLogs: OEM match at line ${index + 1}: ${rawMessage.slice(0, 50)}...`)
 
-        // Skip lines containing "vmid for guest" for la or la1
         if (rawMessage.includes("vmid for guest") && (rawMessage.includes("name la ") || rawMessage.includes("name la1"))) {
           console.log(`parseLogs: Skipping line ${index + 1}: ${rawMessage.slice(0, 50)}...`)
           return
@@ -311,7 +301,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         let event = ""
 
         try {
-          // Parse OEM timestamp
           const timestampMatch = timestampStr.match(/(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/)
           if (!timestampMatch) {
             invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp format: ${timestampStr}`)
@@ -366,7 +355,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             return
           }
 
-          lastValidTimestamp = timestamp // Update last valid timestamp
+          lastValidTimestamp = timestamp
           if (file === "MCUMgrTranslator.cpp") {
             component = "MCUMgrTranslator"
             const eventMatch = rawMessage.match(/\[([A-Z_]+)\]/)
@@ -397,7 +386,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
               event,
               message: rawMessage.trim()
             })
-            console.log(`parseLogs: Added OEM log - Component: ${component}, Event: ${event}, Line: ${lineNumber}`)
+            console.log(`parseLogs: Added OEM log - Component: ${component}, Event: ${event}, Line: ${lineNumber}, Timestamp: ${timestamp.toISOString()}`)
           } else {
             console.warn(`parseLogs: No valid component at line ${index + 1}: ${file}`)
           }
@@ -408,7 +397,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         return
       }
 
-      // Try MCU patterns
       uartPattern.lastIndex = 0
       signalPattern.lastIndex = 0
       hvpmPattern.lastIndex = 0
@@ -442,7 +430,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             priority,
             sequence: parseInt(sequence, 10)
           })
-          console.log(`parseLogs: Added Alive msg log - Event: ALIVE_MSG, Sequence: ${sequence}`)
+          console.log(`parseLogs: Added Alive msg log - Event: ALIVE_MSG, Sequence: ${sequence}, Timestamp: ${timestamp.toISOString()}`)
         } catch (error) {
           console.error(`parseLogs: Error parsing Alive msg line ${index + 1}: ${cleanedLine}`, error)
           invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
@@ -488,7 +476,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             duration,
             priority
           })
-          console.log(`parseLogs: Added UART log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(currentSignals)}`)
+          console.log(`parseLogs: Added UART log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(currentSignals)}, Timestamp: ${timestamp.toISOString()}`)
         } catch (error) {
           console.error(`parseLogs: Error parsing UART line ${index + 1}: ${cleanedLine}`, error)
           invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
@@ -537,7 +525,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             duration: duration || "0 ms",
             priority
           })
-          console.log(`parseLogs: Added Signal log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(currentSignals)}`)
+          console.log(`parseLogs: Added Signal log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(currentSignals)}, Timestamp: ${timestamp.toISOString()}`)
         } catch (error) {
           console.error(`parseLogs: Error parsing signal line ${index + 1}: ${cleanedLine}`, error)
           invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
@@ -564,7 +552,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             duration: duration || "0 ms",
             priority
           })
-          console.log(`parseLogs: Added HVPM log - Event: START_SOC_COMM_REQ, Message: ${message.trim()}`)
+          console.log(`parseLogs: Added HVPM log - Event: START_SOC_COMM_REQ, Message: ${message.trim()}, Timestamp: ${timestamp.toISOString()}`)
         } catch (error) {
           console.error(`parseLogs: Error parsing HVPM line ${index + 1}: ${cleanedLine}`, error)
           invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
@@ -590,7 +578,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             routing: "2 to 1",
             priority
           })
-          console.log(`parseLogs: Added Response log - Event: PM_EVENT_RESP, Message: ${bytesStr.trim()}`)
+          console.log(`parseLogs: Added Response log - Event: PM_EVENT_RESP, Message: ${bytesStr.trim()}, Timestamp: ${timestamp.toISOString()}`)
         } catch (error) {
           console.error(`parseLogs: Error parsing Response line ${index + 1}: ${cleanedLine}`, error)
           invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
@@ -616,7 +604,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
 
     logs.forEach((log, i) => {
       const timestamp = log.timestamp
-      const unixMs = Math.floor(timestamp.getTime())
+      const unixMs = timestamp.getTime()
       const component = log.component
 
       let source_vm: string
@@ -696,8 +684,9 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         console.warn(`convertToUnifiedFormat: Unknown event type '${log.event}' mapped to STATUS_UPDATE`)
       }
 
+      const formattedTimestamp = timestamp.toISOString().slice(0, -1) + (timestamp.getMilliseconds().toString().padStart(3, '0')) + 'Z'
       const structuredLog: UnifiedMessage = {
-        timestamp: timestamp.toISOString().replace('Z', '') + '000Z',
+        timestamp: formattedTimestamp,
         source_vm,
         destination_vm,
         protocol,
@@ -718,20 +707,19 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             duration: log.duration,
             priority: log.priority,
             signal_count: log.signals ? Object.keys(log.signals).length : 0,
-            sequence: log.sequence // Added for alive msg seq
+            sequence: log.sequence
           })
         }
       }
 
       structuredLogs.push(structuredLog)
-      console.log(`convertToUnifiedFormat: Added UnifiedMessage - Component: ${component}, Event: ${log.event}, Type: ${type}, Protocol: ${protocol}`)
+      console.log(`convertToUnifiedFormat: Added UnifiedMessage - Component: ${component}, Event: ${log.event}, Type: ${type}, Protocol: ${protocol}, Timestamp: ${formattedTimestamp}`)
     })
 
     console.log(`convertToUnifiedFormat: Produced ${structuredLogs.length} UnifiedMessages`)
     return structuredLogs
   }
 
-  // Handle file upload
   const handleFileUpload = async (files: File[]) => {
     console.log(`handleFileUpload: Selected files: ${files.map(f => f.name).join(', ')}`)
 
@@ -743,7 +731,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
     }
 
     try {
-      // Read and combine contents of all files
       const fileContents = await Promise.all(
         validFiles.map(file =>
           new Promise<string>((resolve, reject) => {
@@ -762,7 +749,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         )
       )
 
-      // Combine all file contents with newline separator
       const combinedContent = fileContents.join('\n')
       console.log(`handleFileUpload: Combined content length: ${combinedContent.length} characters`)
 
@@ -782,7 +768,8 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         component: msg.payload.component,
         event: msg.payload.message_type,
         protocol: msg.protocol,
-        type: msg.type
+        type: msg.type,
+        timestamp: msg.timestamp
       })))
       onToggleMonitoring(unifiedMessages)
     } catch (error) {
