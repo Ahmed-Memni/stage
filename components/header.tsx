@@ -478,7 +478,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
               .filter(name => fullCurrentSignals[name] !== previousSignals[routingKey][name])
               .map(name => `${name}(${fullCurrentSignals[name]})`);
 
-          previousSignals[routingKey].initialized = true;
+          previousSignals[routingKey].initialized = 1;
 
           signalNames.forEach(name => {
             previousSignals[routingKey][name] = fullCurrentSignals[name];
@@ -726,22 +726,18 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
           })
         )
       )
-
       const combinedContent = fileContents.join('\n')
       console.log(`handleFileUpload: Combined content length: ${combinedContent.length} characters`)
-
       const parsedLogs = parseLogs(combinedContent)
       if (parsedLogs.length === 0) {
         console.error("handleFileUpload: No valid logs parsed")
         throw new Error("No valid log entries found in files")
       }
-
       const unifiedMessages = convertToUnifiedFormat(parsedLogs)
       if (unifiedMessages.length === 0) {
         console.error("handleFileUpload: No UnifiedMessages produced")
         throw new Error("Failed converted logs to UnifiedMessage format")
       }
-
       console.log("handleFileUpload: Loaded messages:", unifiedMessages.map(msg => ({
         component: msg.payload.component,
         event: msg.payload.message_type,
@@ -756,7 +752,6 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
       alert(`Failed to process files: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
   }
-
   return (
     <header className="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
