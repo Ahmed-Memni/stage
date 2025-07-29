@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -163,11 +162,6 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
       LA: { gvm: null, path: null, failure: null },
       LA1: { gvm: null, path: null, failure: null },
     }
-    const lastSignalState: Record<string, Record<string, number>> = {
-      LA: {},
-      LA1: {},
-      MCU: {},
-    }
     let lastKey = ''
 
     filtered.forEach((msg, index) => {
@@ -182,39 +176,16 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
       let modifiedFunction = msg.payload.function || msg.type
 
       if (isSignalChange) {
-        const currentSignals = msg.payload.signals || {}
-        const previousSignals = lastSignalState[component] || {}
-
-        //  "initialisation mt3 first states of signals"
-        const isFirstSignalMessage = Object.keys(previousSignals).length === 0
-
-        if (isFirstSignalMessage) {
-          // for the first message always show all signals
-          shouldAdd = true
-        } else {
-          // For  messages, show only changed signals
-          const hasChanges = msg.payload.changes.some((change: string) => {
-            const [signal, value] = change.match(/(\w+)\((\d+)\)/)?.slice(1) || []
-            return signal && previousSignals[signal] !== parseInt(value)
+        if (msg.payload.changes.length === 0) {
+          console.log(`Index ${index}: Skipping ${msg.payload.message_type}, no signal changes`, {
+            changes: msg.payload.changes,
+            signals: msg.payload.signals,
           })
-
-          if (!hasChanges && msg.payload.changes.length === 0) {
-            console.log(`Index ${index}: Skipping ${msg.payload.message_type}, no signal changes`)
-            return
-          }
-
-          if (msg.payload.changes.length > 0) {
-            // Use only changed signals for display 
-            modifiedFunction = msg.payload.changes.join(" ")
-            displayText = `[${msg.protocol}] ${modifiedFunction}${getProtocolBadge(msg.protocol)}`
-            shouldAdd = true
-          }
+          return
         }
-
-        // Updati states of signals lilcomparaison m3a liba3do
-        Object.entries(currentSignals).forEach(([signal, value]) => {
-          lastSignalState[component][signal] = value as number
-        })
+        shouldAdd = true
+        modifiedFunction = msg.payload.changes.join(" ")
+        displayText = `[${msg.protocol}] ${modifiedFunction}${getProtocolBadge(msg.protocol)}`
       } else if (isGVMMessage) {
         const currentState = msg.payload.function
         if (lastState[component].gvm === currentState) {
@@ -360,7 +331,6 @@ export function SequenceDiagram({ messages, isRealTime = false }: SequenceDiagra
     } else {
       let lastModeState: string | null = null
       let lastSleepEState: string | null = null
-
 
       messagesToShow.forEach((msg, index) => {
         const reverseIndex = messagesToShow.length - index // This makes last message = 1

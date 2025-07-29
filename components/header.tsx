@@ -1,5 +1,4 @@
-
-"use client";
+"use client"
 
 import { Sun, Moon, Play, Pause, Activity, Upload, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -117,265 +116,256 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
   }
 
   const parseLogs = (fileContent: string): ParsedLog[] => {
-    console.log("parseLogs: Starting to parse file content")
+    console.log("parseLogs: Starting to parse file content");
 
     const oemPattern = new RegExp(
       `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+oem_pm\\.\\d+\\s+oem_pm\\s+\\d+\\s+oem_pm\\[(.*?):\\s*(\\d+)\\]:\\s*(.+)`,
       'g'
-    )
+    );
 
     const bootPatternWithTimestamp = new RegExp(
       `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?).*?(quick\\s*boot|cold\\s*boot).*`,
       'gi'
-    )
+    );
 
     const bootPatternNoTimestamp = new RegExp(
       `(quick\\s*boot|cold\\s*boot)`,
       'gi'
-    )
+    );
 
     const uartPattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+pmCpuIf_EventNotifyWakeupLineStat:\\s+([0-9A-Fa-f\\s]+)$`,
       'g'
-    )
+    );
     const signalPattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+(?:\\[PM\\]|\\[(\\d+\\s+to\\s+\\d+)\\])\\s+([A-Za-z0-9_()\\s]+?)(?:\\s+(\\d+\\s+ms))?$`,
       'g'
-    )
+    );
     const hvpmPattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+HVPM_ProcControlCmd:\\s+(.+?)(?:\\s+(\\d+\\s+ms))?$`,
       'g'
-    )
+    );
     const responsePattern = new RegExp(
       `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+PO\\s+(HI|MD|LO)\\s+Response of PM EventCmd:\\s+([0-9A-Fa-f\\s]+)$`,
       'g'
-    )
+    );
     const someIpPattern = new RegExp(
       `(\\w{3}\\s+\\d{1,2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+oem_pm\\.\\d+\\s+oem_pm\\s+\\d+\\s+oem_pm\\[CSomeIpProcessor.cpp:\\s*(\\d+)\\]:\\s*(CSomeIpProcessor\\s+(sendSafeModeEvents|ePowerMode|eSleepOrder)\\s*:\\s*.+)`,
       'g'
-    )
-    const aliveMsgPattern = new RegExp(
-      `(\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+CO\\s+(HI|MD|LO)\\s+alive msg seq:\\s+(\\d+)$`,
-      'g'
-    )
+    );
 
-    const signalNames = ["SIP_PS_HOLD", "PSAIL_ERR", "SM_ERR1", "SM_ERR2", "POFF", "SLEEP_E", "FB_N", "WK_L", "WK_M", "comm", "boot_R", "boot_S", "off_R"]
+    const signalNames = ["SIP_PS_HOLD", "PSAIL_ERR", "SM_ERR1", "SM_ERR2", "POFF", "SLEEP_E", "FB_N", "WK_L", "WK_M", "comm", "boot_R", "boot_S", "off_R"];
 
-    const logs: ParsedLog[] = []
-    const unmatchedLines: string[] = []
-    const invalidTimestamps: string[] = []
-    let lastValidTimestamp: Date | null = null
+    const logs: ParsedLog[] = [];
+    const unmatchedLines: string[] = [];
+    const invalidTimestamps: string[] = [];
+    let lastValidTimestamp: Date | null = null;
 
-    const previousSignals: Record<string, number> = {
-      SIP_PS_HOLD: 0, PSAIL_ERR: 0, SM_ERR1: 0, SM_ERR2: 0,
-      POFF: 0, SLEEP_E: 1, FB_N: 0,
-      WK_L: 0, WK_M: 0, comm: 0,
-      boot_R: 0, boot_S: 0, off_R: 0
-    }
+    const previousSignals: Record<string, Record<string, number>> = {};
 
-    const lines = fileContent.split('\n')
+    const lines = fileContent.split('\n');
 
     lines.forEach((line, index) => {
-      if (!line.trim()) return
+      if (!line.trim()) return;
 
-      const cleanedLine = line.replace(/[^\x20-\x7E\t\n]/g, '')
-      console.log(`parseLogs: Processing line ${index + 1}: ${cleanedLine.slice(0, 50)}...`)
+      const cleanedLine = line.replace(/[^\x20-\x7E\t\n]/g, '');
+      console.log(`parseLogs: Processing line ${index + 1}: ${cleanedLine.slice(0, 50)}...`);
 
-      bootPatternWithTimestamp.lastIndex = 0
-      const bootMatchWithTimestamp = bootPatternWithTimestamp.exec(cleanedLine)
+      bootPatternWithTimestamp.lastIndex = 0;
+      const bootMatchWithTimestamp = bootPatternWithTimestamp.exec(cleanedLine);
       if (bootMatchWithTimestamp) {
-        let [, timestampStr, bootType] = bootMatchWithTimestamp
-        console.log(`parseLogs: Boot match with timestamp at line ${index + 1}: ${bootType}`)
+        let [, timestampStr, bootType] = bootMatchWithTimestamp;
+        console.log(`parseLogs: Boot match with timestamp at line ${index + 1}: ${bootType}`);
 
         try {
           if (!timestampStr.includes('.')) {
-            timestampStr += '.000'
+            timestampStr += '.000';
           }
-          const timestampMatch = timestampStr.match(/(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/)
+          const timestampMatch = timestampStr.match(/(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/);
           if (!timestampMatch) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp format: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp format: ${timestampStr}`);
+            return;
           }
 
-          const [, month, day, hour, minute, second, millisecond] = timestampMatch
+          const [, month, day, hour, minute, second, millisecond] = timestampMatch;
           const monthNames: { [key: string]: number } = {
             Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
             Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-          }
+          };
 
-          const monthIndex = monthNames[month]
+          const monthIndex = monthNames[month];
           if (monthIndex === undefined) {
-            invalidTimestamps.push(`Line ${index + 1}: Unknown month: ${month}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Unknown month: ${month}`);
+            return;
           }
 
-          const dayNum = parseInt(day, 10)
+          const dayNum = parseInt(day, 10);
           if (dayNum < 1 || dayNum > 31) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid day: ${day}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid day: ${day}`);
+            return;
           }
 
-          const hourNum = parseInt(hour, 10)
+          const hourNum = parseInt(hour, 10);
           if (hourNum > 23) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid hour: ${hour}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid hour: ${hour}`);
+            return;
           }
 
-          const minuteNum = parseInt(minute, 10)
+          const minuteNum = parseInt(minute, 10);
           if (minuteNum > 59) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid minute: ${minute}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid minute: ${minute}`);
+            return;
           }
 
-          const secondNum = parseInt(second, 10)
+          const secondNum = parseInt(second, 10);
           if (secondNum > 59) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid second: ${second}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid second: ${second}`);
+            return;
           }
 
-          const msNum = parseInt(millisecond, 10)
+          const msNum = parseInt(millisecond, 10);
           if (msNum > 999) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid millisecond: ${millisecond}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid millisecond: ${millisecond}`);
+            return;
           }
 
-          const timestamp = new Date(Date.UTC(2025, monthIndex, dayNum, hourNum, minuteNum, secondNum, msNum))
+          const timestamp = new Date(Date.UTC(2025, monthIndex, dayNum, hourNum, minuteNum, secondNum, msNum));
           if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp constructed: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp constructed: ${timestampStr}`);
+            return;
           }
 
-          lastValidTimestamp = timestamp
-          const event = bootType.toLowerCase().includes("quick") ? "QUICK_BOOT" : "COLD_BOOT"
+          lastValidTimestamp = timestamp;
+          const event = bootType.toLowerCase().includes("quick") ? "QUICK_BOOT" : "COLD_BOOT";
           logs.push({
             timestamp,
             component: "BootManager",
             line_number: index + 1,
             event,
             message: cleanedLine.trim()
-          })
-          console.log(`parseLogs: Added Boot log with timestamp - Component: BootManager, Event: ${event}, Line: ${index + 1}, Timestamp: ${timestamp.toISOString()}`)
+          });
+          console.log(`parseLogs: Added Boot log with timestamp - Component: BootManager, Event: ${event}, Line: ${index + 1}, Timestamp: ${timestamp.toISOString()}`);
         } catch (error) {
-          console.error(`parseLogs: Error parsing Boot line with timestamp ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: ${timestampStr}`)
+          console.error(`parseLogs: Error parsing Boot line with timestamp ${index + 1}: ${cleanedLine}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: ${timestampStr}`);
         }
-        return
+        return;
       }
 
-      bootPatternNoTimestamp.lastIndex = 0
-      const bootMatchNoTimestamp = bootPatternNoTimestamp.exec(cleanedLine)
+      bootPatternNoTimestamp.lastIndex = 0;
+      const bootMatchNoTimestamp = bootPatternNoTimestamp.exec(cleanedLine);
       if (bootMatchNoTimestamp) {
-        const [, bootType] = bootMatchNoTimestamp
-        console.log(`parseLogs: Boot match without timestamp at line ${index + 1}: ${bootType}`)
+        const [, bootType] = bootMatchNoTimestamp;
+        console.log(`parseLogs: Boot match without timestamp at line ${index + 1}: ${bootType}`);
 
         try {
-          const timestamp = lastValidTimestamp || new Date('2025-01-01T00:00:00.000Z')
-          const event = bootType.toLowerCase().includes("quick") ? "QUICK_BOOT" : "COLD_BOOT"
+          const timestamp = lastValidTimestamp || new Date('2025-01-01T00:00:00.000Z');
+          const event = bootType.toLowerCase().includes("quick") ? "QUICK_BOOT" : "COLD_BOOT";
           logs.push({
             timestamp,
             component: "BootManager",
             line_number: index + 1,
             event,
             message: cleanedLine.trim()
-          })
-          console.log(`parseLogs: Added Boot log without timestamp - Component: BootManager, Event: ${event}, Line: ${index + 1}, Timestamp: ${timestamp.toISOString()}`)
+          });
+          console.log(`parseLogs: Added Boot log without timestamp - Component: BootManager, Event: ${event}, Line: ${index + 1}, Timestamp: ${timestamp.toISOString()}`);
         } catch (error) {
-          console.error(`parseLogs: Error parsing Boot line without timestamp ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: No timestamp`)
+          console.error(`parseLogs: Error parsing Boot line without timestamp ${index + 1}: ${cleanedLine}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: No timestamp`);
         }
-        return
+        return;
       }
 
-      oemPattern.lastIndex = 0
-      const oemMatch = oemPattern.exec(cleanedLine)
+      oemPattern.lastIndex = 0;
+      const oemMatch = oemPattern.exec(cleanedLine);
       if (oemMatch) {
-        const [, timestampStr, file, lineNumber, rawMessage] = oemMatch
-        console.log(`parseLogs: OEM match at line ${index + 1}: ${rawMessage.slice(0, 50)}...`)
+        const [, timestampStr, file, lineNumber, rawMessage] = oemMatch;
+        console.log(`parseLogs: OEM match at line ${index + 1}: ${rawMessage.slice(0, 50)}...`);
 
         if (rawMessage.includes("vmid for guest") && (rawMessage.includes("name la ") || rawMessage.includes("name la1"))) {
-          console.log(`parseLogs: Skipping line ${index + 1}: ${rawMessage.slice(0, 50)}...`)
-          return
+          console.log(`parseLogs: Skipping line ${index + 1}: ${rawMessage.slice(0, 50)}...`);
+          return;
         }
 
-        let component: string | null = null
-        let event = ""
+        let component: string | null = null;
+        let event = "";
 
         try {
-          const timestampMatch = timestampStr.match(/(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/)
+          const timestampMatch = timestampStr.match(/(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})/);
           if (!timestampMatch) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp format: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp format: ${timestampStr}`);
+            return;
           }
 
-          const [, month, day, hour, minute, second, millisecond] = timestampMatch
+          const [, month, day, hour, minute, second, millisecond] = timestampMatch;
           const monthNames: { [key: string]: number } = {
             Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
             Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-          }
+          };
 
-          const monthIndex = monthNames[month]
+          const monthIndex = monthNames[month];
           if (monthIndex === undefined) {
-            invalidTimestamps.push(`Line ${index + 1}: Unknown month: ${month}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Unknown month: ${month}`);
+            return;
           }
 
-          const dayNum = parseInt(day, 10)
+          const dayNum = parseInt(day, 10);
           if (dayNum < 1 || dayNum > 31) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid day: ${day}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid day: ${day}`);
+            return;
           }
 
-          const hourNum = parseInt(hour, 10)
+          const hourNum = parseInt(hour, 10);
           if (hourNum > 23) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid hour: ${hour}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid hour: ${hour}`);
+            return;
           }
 
-          const minuteNum = parseInt(minute, 10)
+          const minuteNum = parseInt(minute, 10);
           if (minuteNum > 59) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid minute: ${minute}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid minute: ${minute}`);
+            return;
           }
 
-          const secondNum = parseInt(second, 10)
+          const secondNum = parseInt(second, 10);
           if (secondNum > 59) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid second: ${second}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid second: ${second}`);
+            return;
           }
 
-          const msNum = parseInt(millisecond, 10)
+          const msNum = parseInt(millisecond, 10);
           if (msNum > 999) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid millisecond: ${millisecond}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid millisecond: ${millisecond}`);
+            return;
           }
 
-          const timestamp = new Date(Date.UTC(2025, monthIndex, dayNum, hourNum, minuteNum, secondNum, msNum))
+          const timestamp = new Date(Date.UTC(2025, monthIndex, dayNum, hourNum, minuteNum, secondNum, msNum));
           if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp constructed: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid timestamp constructed: ${timestampStr}`);
+            return;
           }
 
-          lastValidTimestamp = timestamp
+          lastValidTimestamp = timestamp;
           if (file === "MCUMgrTranslator.cpp") {
-            component = "MCUMgrTranslator"
-            const eventMatch = rawMessage.match(/\[([A-Z_]+)\]/)
-            event = eventMatch ? eventMatch[1] : "UNKNOWN"
+            component = "MCUMgrTranslator";
+            const eventMatch = rawMessage.match(/$$ ([A-Z_]+) $$/);
+            event = eventMatch ? eventMatch[1] : "UNKNOWN";
           } else if (file === "OEMPMMsgTranslator.cpp") {
-            component = "OEMPMMsgTranslator"
-            const eventMatch = rawMessage.match(/\[([A-Z_]+)\]/)
-            event = eventMatch ? eventMatch[1] : "UNKNOWN"
+            component = "OEMPMMsgTranslator";
+            const eventMatch = rawMessage.match(/$$ ([A-Z_]+) $$/);
+            event = eventMatch ? eventMatch[1] : "UNKNOWN";
           } else if (file === "CVMMInf.cpp") {
             if (rawMessage.includes("/la1/")) {
-              component = "LA1"
-              event = "POWER_STATUS_LA1"
+              component = "LA1";
+              event = "POWER_STATUS_LA1";
             } else if (rawMessage.includes("/la/")) {
-              component = "LA"
-              event = "POWER_STATUS_LA"
+              component = "LA";
+              event = "POWER_STATUS_LA";
             }
           } else if (file === "CSomeIpProcessor.cpp") {
-            component = "CSomeIpProcessor"
-            const eventMatch = rawMessage.match(/CSomeIpProcessor\s+(sendSafeModeEvents|ePowerMode|eSleepOrder)/)
-            event = eventMatch ? eventMatch[1] : "UNKNOWN"
+            component = "CSomeIpProcessor";
+            const eventMatch = rawMessage.match(/CSomeIpProcessor\s+(sendSafeModeEvents|ePowerMode|eSleepOrder)/);
+            event = eventMatch ? eventMatch[1] : "UNKNOWN";
           }
 
           if (component) {
@@ -385,133 +375,114 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
               line_number: parseInt(lineNumber, 10),
               event,
               message: rawMessage.trim()
-            })
-            console.log(`parseLogs: Added OEM log - Component: ${component}, Event: ${event}, Line: ${lineNumber}, Timestamp: ${timestamp.toISOString()}`)
+            });
+            console.log(`parseLogs: Added OEM log - Component: ${component}, Event: ${event}, Line: ${lineNumber}, Timestamp: ${timestamp.toISOString()}`);
           } else {
-            console.warn(`parseLogs: No valid component at line ${index + 1}: ${file}`)
+            console.warn(`parseLogs: No valid component at line ${index + 1}: ${file}`);
           }
         } catch (error) {
-          console.error(`parseLogs: Error parsing OEM line ${index + 1}: ${rawMessage}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: ${timestampStr}`)
+          console.error(`parseLogs: Error parsing OEM line ${index + 1}: ${rawMessage}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in timestamp parsing: ${timestampStr}`);
         }
-        return
+        return;
       }
 
-      uartPattern.lastIndex = 0
-      signalPattern.lastIndex = 0
-      hvpmPattern.lastIndex = 0
-      responsePattern.lastIndex = 0
-      aliveMsgPattern.lastIndex = 0
-      const uartMatch = uartPattern.exec(cleanedLine)
-      const sigMatch = signalPattern.exec(cleanedLine)
-      const hvpmMatch = hvpmPattern.exec(cleanedLine)
-      const responseMatch = responsePattern.exec(cleanedLine)
-      const aliveMsgMatch = aliveMsgPattern.exec(cleanedLine)
+      uartPattern.lastIndex = 0;
+      signalPattern.lastIndex = 0;
+      hvpmPattern.lastIndex = 0;
+      responsePattern.lastIndex = 0;
+      const uartMatch = uartPattern.exec(cleanedLine);
+      const sigMatch = signalPattern.exec(cleanedLine);
+      const hvpmMatch = hvpmPattern.exec(cleanedLine);
+      const responseMatch = responsePattern.exec(cleanedLine);
 
-      if (aliveMsgMatch) {
-        const [, timestampStr, priority, sequence] = aliveMsgMatch
-        console.log(`parseLogs: Alive msg seq match at line ${index + 1}: seq ${sequence}`)
+      if (uartMatch) {
+        const [, timestampStr, priority, bytesStr] = uartMatch;
+        console.log(`parseLogs: UART match at line ${index + 1}: Timestamp=${timestampStr}, Priority=${priority}, Bytes=${bytesStr}, Line=${cleanedLine}`);
         try {
-          const tsClean = timestampStr.split('-')[1] || timestampStr
-          const timestamp = new Date(`2025-01-01T${tsClean}Z`)
+          const tsClean = timestampStr.split('-')[1] || timestampStr;
+          const timestamp = new Date(`2025-01-01T${tsClean}Z`);
           if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`)
-            return
+            console.error(`parseLogs: Invalid MCU timestamp at line ${index + 1}: ${timestampStr}`);
+            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`);
+            return;
           }
 
-          lastValidTimestamp = timestamp
-          logs.push({
-            timestamp,
-            component: "MCU",
-            line_number: index + 1,
-            event: "ALIVE_MSG",
-            message: `alive msg seq: ${sequence}`,
-            routing: "2 to 1",
-            priority,
-            sequence: parseInt(sequence, 10)
-          })
-          console.log(`parseLogs: Added Alive msg log - Event: ALIVE_MSG, Sequence: ${sequence}, Timestamp: ${timestamp.toISOString()}`)
-        } catch (error) {
-          console.error(`parseLogs: Error parsing Alive msg line ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
-        }
-      } else if (uartMatch) {
-        const [, timestampStr, priority, bytesStr] = uartMatch
-        console.log(`parseLogs: UART match at line ${index + 1}: ${bytesStr}`)
-        try {
-          const tsClean = timestampStr.split('-')[1] || timestampStr
-          const timestamp = new Date(`2025-01-01T${tsClean}Z`)
-          if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`)
-            return
-          }
-
-          lastValidTimestamp = timestamp
-          const lastByte = bytesStr.trim().split(' ').pop()
-          const val = lastByte === '01' ? 1 : 0
-          const currentSignals: Record<string, number> = { SLEEP_E: val, WK_L: val, comm: val }
-          const routing = "1 to 2"
-          const duration = "0 ms"
-          const message = `pmCpuIf_EventNotifyWakeupLineStat: ${bytesStr}`
-
-          const changes = signalNames
-            .filter(name => currentSignals[name] !== undefined && currentSignals[name] !== previousSignals[name])
-            .map(name => `${name}(${currentSignals[name]})`)
-
-          signalNames.forEach(name => {
-            if (currentSignals[name] != undefined) {
-              previousSignals[name] = currentSignals[name]
-            }
-          })
+          lastValidTimestamp = timestamp;
+          const routing = "1 to 2";
+          const duration = "0 ms";
+          const message = `pmCpuIf_EventNotifyWakeupLineStat: ${bytesStr}`;
 
           logs.push({
             timestamp,
             component: "MCU",
             line_number: index + 1,
-            event: changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE",
+            event: "WAKEUP_LINE_STAT",
             message,
-            signals: currentSignals,
-            changes,
             routing,
             duration,
             priority
-          })
-          console.log(`parseLogs: Added UART log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(currentSignals)}, Timestamp: ${timestamp.toISOString()}`)
+          });
+          console.log(`parseLogs: Added UART log - Event: WAKEUP_LINE_STAT, Message: ${message}, Timestamp: ${timestamp.toISOString()}`);
         } catch (error) {
-          console.error(`parseLogs: Error parsing UART line ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
+          console.error(`parseLogs: Error parsing UART line ${index + 1}: ${cleanedLine}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`);
         }
       } else if (sigMatch) {
-        const [, timestampStr, priority, routing, signalsStr, duration] = sigMatch
-        console.log(`parseLogs: Signal match at line ${index + 1}: ${signalsStr}`)
+        const [, timestampStr, priority, , signalsStr, duration] = sigMatch;
+        console.log(`parseLogs: Signal match at line ${index + 1}: ${signalsStr}`);
         try {
-          const tsClean = timestampStr.split('-')[1] || timestampStr
-          const timestamp = new Date(`2025-01-01T${tsClean}Z`)
+          const tsClean = timestampStr.split('-')[1] || timestampStr;
+          const timestamp = new Date(`2025-01-01T${tsClean}Z`);
           if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`);
+            return;
           }
 
-          lastValidTimestamp = timestamp
-          const currentSignals: Record<string, number> = {}
-          const signalValuePattern = new RegExp(`(\\w+)\\(([01])\\)`, 'g')
-          let signalMatch
+          lastValidTimestamp = timestamp;
+          const routingKey = "1 to 2";
+
+          const currentSignals: Record<string, number> = {};
+          const signalValuePattern = new RegExp(`(\\w+)\\(([0-9]{1,3})\\)`, 'g');
+          let signalMatch;
           while ((signalMatch = signalValuePattern.exec(signalsStr)) !== null) {
-            const [, name, value] = signalMatch
+            const [, name, valueStr] = signalMatch;
             if (signalNames.includes(name)) {
-              currentSignals[name] = parseInt(value, 10)
+              const value = parseInt(valueStr, 10);
+              if (value >= 0 && value <= 999) {
+                currentSignals[name] = value;
+              } else {
+                console.warn(`parseLogs: Invalid signal value at line ${index + 1}: ${name}(${valueStr}) not in range 0-999`);
+              }
             }
           }
 
-          const changes = signalNames
-            .filter(name => currentSignals[name] !== undefined && currentSignals[name] !== previousSignals[name])
-            .map(name => `${name}(${currentSignals[name]})`)
+          if (!previousSignals[routingKey]) {
+            previousSignals[routingKey] = {};
+            signalNames.forEach(name => {
+              previousSignals[routingKey][name] = currentSignals[name] !== undefined ? currentSignals[name] : 0;
+            });
+            console.log(`parseLogs: Initialized previousSignals[${routingKey}] with ${JSON.stringify(previousSignals[routingKey])}`);
+          }
 
+          const fullCurrentSignals: Record<string, number> = { ...previousSignals[routingKey] };
           signalNames.forEach(name => {
             if (currentSignals[name] !== undefined) {
-              previousSignals[name] = currentSignals[name]
+              fullCurrentSignals[name] = currentSignals[name];
             }
-          })
+          });
+
+          const changes = !previousSignals[routingKey].initialized
+            ? Object.keys(currentSignals).map(name => `${name}(${currentSignals[name]})`)
+            : signalNames
+              .filter(name => fullCurrentSignals[name] !== previousSignals[routingKey][name])
+              .map(name => `${name}(${fullCurrentSignals[name]})`);
+
+          previousSignals[routingKey].initialized = true;
+
+          signalNames.forEach(name => {
+            previousSignals[routingKey][name] = fullCurrentSignals[name];
+          });
 
           logs.push({
             timestamp,
@@ -519,83 +490,83 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             line_number: index + 1,
             event: changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE",
             message: signalsStr.trim(),
-            signals: currentSignals,
+            signals: fullCurrentSignals,
             changes,
-            routing: routing || "1 to 2",
+            routing: routingKey,
             duration: duration || "0 ms",
             priority
-          })
-          console.log(`parseLogs: Added Signal log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(currentSignals)}, Timestamp: ${timestamp.toISOString()}`)
+          });
+          console.log(`parseLogs: Added Signal log - Event: ${changes.length > 0 ? "SIGNAL_CHANGE" : "SIGNAL_STATE"}, Signals: ${JSON.stringify(fullCurrentSignals)}, Changes: ${changes}, Timestamp: ${timestamp.toISOString()}`);
         } catch (error) {
-          console.error(`parseLogs: Error parsing signal line ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
+          console.error(`parseLogs: Error parsing signal line ${index + 1}: ${cleanedLine}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`);
         }
       } else if (hvpmMatch) {
-        const [, timestampStr, priority, message, duration] = hvpmMatch
-        console.log(`parseLogs: HVPM match at line ${index + 1}: ${message}`)
+        const [, timestampStr, priority, message, duration] = hvpmMatch;
+        console.log(`parseLogs: HVPM match at line ${index + 1}: ${message}`);
         try {
-          const tsClean = timestampStr.split('-')[1] || timestampStr
-          const timestamp = new Date(`2025-01-01T${tsClean}Z`)
+          const tsClean = timestampStr.split('-')[1] || timestampStr;
+          const timestamp = new Date(`2025-01-01T${tsClean}Z`);
           if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`);
+            return;
           }
 
-          lastValidTimestamp = timestamp
+          lastValidTimestamp = timestamp;
           logs.push({
             timestamp,
             component: "MCU",
             line_number: index + 1,
             event: "START_SOC_COMM_REQ",
             message: `HVPM_ProcControlCmd: ${message.trim()}`,
-            routing: "2 to 1",
+            routing: "1 to 2",
             duration: duration || "0 ms",
             priority
-          })
-          console.log(`parseLogs: Added HVPM log - Event: START_SOC_COMM_REQ, Message: ${message.trim()}, Timestamp: ${timestamp.toISOString()}`)
+          });
+          console.log(`parseLogs: Added HVPM log - Event: START_SOC_COMM_REQ, Message: ${message.trim()}, Timestamp: ${timestamp.toISOString()}`);
         } catch (error) {
-          console.error(`parseLogs: Error parsing HVPM line ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
+          console.error(`parseLogs: Error parsing HVPM line ${index + 1}: ${cleanedLine}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`);
         }
       } else if (responseMatch) {
-        const [, timestampStr, priority, bytesStr] = responseMatch
-        console.log(`parseLogs: Response match at line ${index + 1}: ${bytesStr}`)
+        const [, timestampStr, priority, bytesStr] = responseMatch;
+        console.log(`parseLogs: Response match at line ${index + 1}: ${bytesStr}`);
         try {
-          const tsClean = timestampStr.split('-')[1] || timestampStr
-          const timestamp = new Date(`2025-01-01T${tsClean}Z`)
+          const tsClean = timestampStr.split('-')[1] || timestampStr;
+          const timestamp = new Date(`2025-01-01T${tsClean}Z`);
           if (isNaN(timestamp.getTime())) {
-            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`)
-            return
+            invalidTimestamps.push(`Line ${index + 1}: Invalid MCU timestamp: ${timestampStr}`);
+            return;
           }
 
-          lastValidTimestamp = timestamp
+          lastValidTimestamp = timestamp;
           logs.push({
             timestamp,
             component: "MCU",
             line_number: index + 1,
             event: "PM_EVENT_RESP",
             message: `Response of PM EventCmd: ${bytesStr.trim()}`,
-            routing: "2 to 1",
+            routing: "1 to 2",
             priority
-          })
-          console.log(`parseLogs: Added Response log - Event: PM_EVENT_RESP, Message: ${bytesStr.trim()}, Timestamp: ${timestamp.toISOString()}`)
+          });
+          console.log(`parseLogs: Added Response log - Event: PM_EVENT_RESP, Message: ${bytesStr.trim()}, Timestamp: ${timestamp.toISOString()}`);
         } catch (error) {
-          console.error(`parseLogs: Error parsing Response line ${index + 1}: ${cleanedLine}`, error)
-          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`)
+          console.error(`parseLogs: Error parsing Response line ${index + 1}: ${cleanedLine}`, error);
+          invalidTimestamps.push(`Line ${index + 1}: Exception in MCU timestamp parsing: ${timestampStr}`);
         }
       } else {
-        unmatchedLines.push(`Line ${index + 1}: ${cleanedLine.trim().slice(0, 50)}...`)
+        unmatchedLines.push(`Line ${index + 1}: ${cleanedLine.trim().slice(0, 50)}...`);
       }
-    })
+    });
 
     if (unmatchedLines.length > 0) {
-      console.warn(`parseLogs: ${unmatchedLines.length} lines did not match any regex:`, unmatchedLines.slice(0, 5))
+      console.warn(`parseLogs: ${unmatchedLines.length} lines did not match any regex:`, unmatchedLines.slice(0, 5));
     }
     if (invalidTimestamps.length > 0) {
-      console.warn(`parseLogs: ${invalidTimestamps.length} invalid timestamps:`, invalidTimestamps.slice(0, 5))
+      console.warn(`parseLogs: ${invalidTimestamps.length} invalid timestamps:`, invalidTimestamps.slice(0, 5));
     }
-    console.log(`parseLogs: Processed ${lines.length} lines, produced ${logs.length} valid logs`)
-    return logs
+    console.log(`parseLogs: Processed ${lines.length} lines, produced ${logs.length} valid logs`);
+    return logs;
   }
 
   const convertToUnifiedFormat = (logs: ParsedLog[]): UnifiedMessage[] => {
@@ -613,23 +584,25 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
       let protocol: "UART" | "SOMEIP" | "MODE" | "CAN" = "UART"
 
       if (component === "MCU") {
-        if (log.event === "START_SOC_COMM_REQ") {
+        if (log.event === "WAKEUP_LINE_STAT") {
           source_vm = "VM2"
           destination_vm = "VM1"
+          type = "STATUS_UPDATE"
+        } else if (log.event === "START_SOC_COMM_REQ") {
+          source_vm = "VM1"
+          destination_vm = "VM2"
           type = "DIAG_REQ"
         } else if (log.event === "PM_EVENT_RESP") {
-          source_vm = "VM2"
-          destination_vm = "VM1"
+          source_vm = "VM1"
+          destination_vm = "VM2"
           type = "DIAG_RESP"
         } else if (log.event === "ALIVE_MSG") {
-          source_vm = "VM2"
-          destination_vm = "VM1"
+          source_vm = "VM1"
+          destination_vm = "VM2"
           type = "HEARTBEAT"
         } else {
           source_vm = "VM1"
-          destination_vm = log.signals && (Object.keys(log.signals).includes("SIP_PS_HOLD") || Object.keys(log.signals).includes("FB_N"))
-            ? "VM3"
-            : log.routing === "1 to 2" ? "VM2" : "VM2"
+          destination_vm = "VM2"
           type = log.event === "SIGNAL_CHANGE" || log.event === "SIGNAL_STATE" ? "STATUS_UPDATE" : "DIAG_REQ"
         }
       } else if (component === "MCUMgrTranslator") {
@@ -700,7 +673,7 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
           function: log.message,
           component,
           line_number: log.line_number,
-          ...(component === "MCU" && {
+          ...(component === "MCU" && log.event !== "WAKEUP_LINE_STAT" && {
             signals: log.signals,
             changes: log.changes,
             routing: log.routing,
@@ -708,6 +681,11 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
             priority: log.priority,
             signal_count: log.signals ? Object.keys(log.signals).length : 0,
             sequence: log.sequence
+          }),
+          ...(component === "MCU" && log.event === "WAKEUP_LINE_STAT" && {
+            routing: log.routing,
+            duration: log.duration,
+            priority: log.priority
           })
         }
       }
@@ -769,7 +747,8 @@ export function Header({ darkMode, toggleDarkMode, isMonitoring, onToggleMonitor
         event: msg.payload.message_type,
         protocol: msg.protocol,
         type: msg.type,
-        timestamp: msg.timestamp
+        timestamp: msg.timestamp,
+        changes: msg.payload.changes
       })))
       onToggleMonitoring(unifiedMessages)
     } catch (error) {
